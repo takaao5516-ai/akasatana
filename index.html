@@ -1,116 +1,164 @@
-<!--
-GitHub Pages対応版
+# GitHub Pages 公開対応版
 
-このファイルを index.html にしてGitHubへアップロードしてください。
+このHTMLはサーバー不要でそのままGitHub Pagesで公開できます。
 
-さらに以下の deploy.yml を
-.github/workflows/deploy.yml
-に保存するとNode.js 24対応になります。
+## 公開方法
 
-==============================
-deploy.yml の内容
-==============================
+1. GitHubで新しいリポジトリを作成
+2. ファイル名を `index.html` にして保存
+3. GitHubへアップロード
+4. GitHubの `Settings` → `Pages` を開く
+5. Branchを `main` に設定
+6. Saveを押す
+7. 数十秒後に公開URLが発行されます
 
-name: Deploy GitHub Pages
+## 特徴
 
-on:
-  push:
-    branches:
-      - main
+* サーバー不要
+* スマホ対応
+* GitHub Pages対応
+* 管理者機能付き
+* パスワードログイン付き
+* スレッド複数作成対応
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
-
-jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v6
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: .
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
-
-==============================
--->
-
+```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>黄チャンネル</title>
+<title>黄チャンネル掲示板</title>
 
 <style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
 body{
-    font-family:"BIZ UDPGothic","Yu Gothic UI",sans-serif;
     background:#efefef;
-    margin:0;
+    font-family:"BIZ UDPGothic","Yu Gothic UI","Hiragino Kaku Gothic ProN",sans-serif;
 }
+
+/* ログイン画面 */
+
+#loginScreen{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:#f4f4f4;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+.login-box{
+    width:90%;
+    max-width:400px;
+    background:white;
+    padding:25px;
+    border:2px solid #999;
+    border-radius:10px;
+}
+
+.login-box h1{
+    margin-bottom:20px;
+    text-align:center;
+    color:#003366;
+}
+
+.login-box input{
+    width:100%;
+    padding:12px;
+    margin-bottom:12px;
+    border:1px solid #999;
+}
+
+.login-box button{
+    width:100%;
+}
+
+/* ヘッダー */
 
 header{
     background:#003366;
     color:white;
     padding:15px;
-    text-align:center;
-    font-size:28px;
-    font-weight:bold;
-}
-
-.center{
     display:flex;
-    justify-content:center;
+    justify-content:space-between;
     align-items:center;
-    height:100vh;
 }
 
-.login-box{
+header h1{
+    font-size:28px;
+}
+
+.admin-btn{
+    background:#cc0000;
+    color:white;
+    border:none;
+    padding:10px 15px;
+    cursor:pointer;
+}
+
+/* 管理者画面 */
+
+#adminPanel{
+    position:fixed;
+    top:0;
+    right:-400px;
+    width:350px;
+    height:100%;
     background:white;
-    padding:30px;
-    border:2px solid #999;
-    width:320px;
+    border-left:3px solid #999;
+    transition:0.3s;
+    z-index:999;
+    padding:20px;
+    overflow-y:auto;
 }
 
-input{
+#adminPanel.open{
+    right:0;
+}
+
+.admin-close{
+    background:#333;
+    color:white;
+    border:none;
+    padding:8px 12px;
+    margin-bottom:15px;
+    cursor:pointer;
+}
+
+.admin-section{
+    margin-bottom:20px;
+}
+
+.admin-section h2{
+    margin-bottom:10px;
+    color:#003366;
+}
+
+.admin-section input{
     width:100%;
-    padding:12px;
+    padding:10px;
     margin-bottom:10px;
     border:1px solid #999;
 }
 
-button{
+.admin-section button{
     width:100%;
-    padding:12px;
-    border:none;
-    background:#003366;
-    color:white;
-    cursor:pointer;
 }
 
+/* レイアウト */
+
 .main{
-    display:none;
-    height:calc(100vh - 62px);
+    display:flex;
+    height:calc(100vh - 70px);
 }
 
 .sidebar{
@@ -121,13 +169,19 @@ button{
 }
 
 .sidebar h2{
-    background:#ddd;
-    margin:0;
+    background:#dcdcdc;
     padding:10px;
 }
 
 .thread-create{
     padding:10px;
+    border-bottom:2px solid #ccc;
+}
+
+.thread-create input{
+    width:100%;
+    padding:10px;
+    margin-bottom:10px;
 }
 
 .thread-item{
@@ -154,8 +208,8 @@ button{
 }
 
 .thread-title{
-    color:#cc0000;
     font-size:24px;
+    color:#cc0000;
     margin-bottom:20px;
     font-weight:bold;
 }
@@ -165,45 +219,55 @@ button{
     padding:12px 0;
 }
 
+.post-number{
+    color:#0000ff;
+    font-weight:bold;
+}
+
 .post-name{
     color:#008800;
     font-weight:bold;
 }
 
+.post-date{
+    color:#666;
+}
+
+.post-id{
+    color:#cc0000;
+}
+
 .post-content{
     margin-top:8px;
     white-space:pre-wrap;
+    line-height:1.7;
 }
 
-.admin-btn{
-    position:fixed;
-    top:10px;
-    right:10px;
-    width:auto;
-    padding:10px 15px;
-    background:#cc0000;
+.form-box{
+    margin-top:25px;
+    background:#f7f7f7;
+    border:1px solid #aaa;
+    padding:15px;
 }
 
-#adminPanel{
-    position:fixed;
-    top:0;
-    right:-350px;
-    width:320px;
-    height:100%;
-    background:white;
-    transition:0.3s;
-    padding:20px;
-    border-left:3px solid #999;
-}
-
-#adminPanel.open{
-    right:0;
-}
-
-textarea{
+.form-box input,
+.form-box textarea{
     width:100%;
     padding:10px;
     margin-bottom:10px;
+    border:1px solid #999;
+}
+
+button{
+    background:#003366;
+    color:white;
+    border:none;
+    padding:10px;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:0.9;
 }
 
 @media(max-width:800px){
@@ -217,20 +281,22 @@ textarea{
         height:250px;
     }
 
-}
+    header{
+        flex-direction:column;
+        gap:10px;
+    }
 
+}
 </style>
 </head>
-
 <body>
 
-<!-- ログイン -->
-
-<div class="center" id="loginScreen">
+<!-- パスワード画面 -->
+<div id="loginScreen">
 
     <div class="login-box">
 
-        <h2>黄チャンネル ログイン</h2>
+        <h1>黄チャンネル ログイン</h1>
 
         <input type="text" id="siteUser" placeholder="ユーザー名">
 
@@ -244,27 +310,53 @@ textarea{
 
 </div>
 
-<!-- 本体 -->
-
 <header>
-黄チャンネル
+
+    <h1>黄チャンネル掲示板</h1>
+
+    <button class="admin-btn" onclick="showAdminLogin()">
+        管理者ログイン
+    </button>
+
 </header>
 
-<button class="admin-btn" onclick="adminLogin()">
-管理者ログイン
-</button>
+<!-- 管理者パネル -->
+<div id="adminPanel">
 
-<div class="main" id="mainArea">
+    <button class="admin-close" onclick="closeAdminPanel()">
+        閉じる
+    </button>
+
+    <div class="admin-section">
+
+        <h2>管理者機能</h2>
+
+        <button onclick="deleteCurrentThread()">
+            現在のスレを削除
+        </button>
+
+        <br><br>
+
+        <input type="text" id="adminNotice" placeholder="管理者のお知らせ内容">
+
+        <button onclick="postAdminNotice()">
+            管理者がお伝えしますを投稿
+        </button>
+
+    </div>
+
+</div>
+
+<div class="main">
 
     <!-- 左 -->
-
     <div class="sidebar">
 
-        <h2>スレ一覧</h2>
+        <h2>スレッド一覧</h2>
 
         <div class="thread-create">
 
-            <input type="text" id="newThreadTitle" placeholder="スレタイ">
+            <input type="text" id="newThreadTitle" placeholder="新しいスレタイ">
 
             <button onclick="createThread()">
                 スレ作成
@@ -277,7 +369,6 @@ textarea{
     </div>
 
     <!-- 右 -->
-
     <div class="content">
 
         <div class="thread">
@@ -288,15 +379,17 @@ textarea{
 
             <div id="posts"></div>
 
-            <br>
+            <div class="form-box">
 
-            <input type="text" id="name" placeholder="名前">
+                <input type="text" id="name" placeholder="名前">
 
-            <textarea id="message" rows="5" placeholder="メッセージ"></textarea>
+                <textarea id="message" rows="5" placeholder="メッセージ"></textarea>
 
-            <button onclick="addPost()">
-                書き込む
-            </button>
+                <button onclick="addPost()">
+                    書き込む
+                </button>
+
+            </div>
 
         </div>
 
@@ -304,32 +397,21 @@ textarea{
 
 </div>
 
-<!-- 管理者 -->
-
-<div id="adminPanel">
-
-    <h2>管理者機能</h2>
-
-    <textarea id="adminNotice" rows="5" placeholder="お知らせ"></textarea>
-
-    <button onclick="postAdminNotice()">
-        黄チャンネル管理者がお伝えします
-    </button>
-
-</div>
-
 <script>
 
+/* サイトログイン情報 */
 const SITE_USER = "omoriharuki";
 const SITE_PASS = "omoriharuki";
 
+/* 管理者情報 */
 const ADMIN_USER = "oomoriharuki";
 const ADMIN_PASS = "atamayoi";
 
 let isAdmin = false;
+let threads = JSON.parse(localStorage.getItem("yellowChannelThreads")) || {};
+let currentThread = localStorage.getItem("yellowChannelCurrentThread") || null;
 
-let threads = {};
-let currentThread = null;
+/* サイトログイン */
 
 function siteLogin(){
 
@@ -340,17 +422,17 @@ function siteLogin(){
 
         document.getElementById("loginScreen").style.display = "none";
 
-        document.getElementById("mainArea").style.display = "flex";
-
     }else{
 
-        alert("ログイン失敗");
+        alert("メールアドレスまたはパスワードが違います");
 
     }
 
 }
 
-function adminLogin(){
+/* 管理者ログイン */
+
+function showAdminLogin(){
 
     const user = prompt("管理者ユーザー名");
     const pass = prompt("管理者パスワード");
@@ -365,85 +447,185 @@ function adminLogin(){
 
     }else{
 
-        alert("失敗");
+        alert("ログイン失敗");
 
     }
 
 }
 
+function closeAdminPanel(){
+
+    document.getElementById("adminPanel").classList.remove("open");
+
+}
+
+/* ランダムID */
+
+function randomID(){
+
+    return Math.random().toString(36).substring(2,8);
+
+}
+
+/* エスケープ */
+
+function escapeHTML(str){
+
+    return str
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;");
+
+}
+
+/* スレ作成 */
+
+function saveData(){
+
+    localStorage.setItem(
+        "yellowChannelThreads",
+        JSON.stringify(threads)
+    );
+
+    localStorage.setItem(
+        "yellowChannelCurrentThread",
+        currentThread
+    );
+
+}
+
+function loadThreads(){
+
+    const list = document.getElementById("threadList");
+
+    list.innerHTML = "";
+
+    for(const id in threads){
+
+        const div = document.createElement("div");
+
+        div.className = "thread-item";
+
+        div.textContent = threads[id].title;
+
+        div.onclick = ()=>openThread(id);
+
+        list.appendChild(div);
+
+    }
+
+    if(currentThread && threads[currentThread]){
+
+        openThread(currentThread);
+
+    }
+
+}
+
+window.onload = ()=>{
+
+    loadThreads();
+
+};
+
 function createThread(){
 
     const title = document.getElementById("newThreadTitle").value.trim();
 
-    if(title === "") return;
+    if(title === ""){
 
-    const id = Date.now().toString();
+        alert("スレタイを入力してください");
+        return;
 
-    threads[id] = {
+    }
+
+    const threadID = Date.now().toString();
+
+    threads[threadID] = {
         title:title,
         posts:[]
     };
 
-    const div = document.createElement("div");
+    const item = document.createElement("div");
 
-    div.className = "thread-item";
+    item.className = "thread-item";
 
-    div.textContent = title;
+    item.textContent = title;
 
-    div.onclick = ()=>openThread(id);
+    item.id = "thread-" + threadID;
 
-    document.getElementById("threadList").appendChild(div);
+    item.onclick = () => openThread(threadID);
+
+    document.getElementById("threadList").appendChild(item);
 
     document.getElementById("newThreadTitle").value = "";
 
+    saveData();
+
+    openThread(threadID);
+
 }
 
-function openThread(id){
+/* スレ開く */
 
-    currentThread = id;
+function openThread(threadID){
 
-    document.getElementById("threadTitle").textContent =
-        threads[id].title;
+    currentThread = threadID;
+
+    const thread = threads[threadID];
+
+    document.getElementById("threadTitle").textContent = thread.title;
 
     renderPosts();
 
+    saveData();
+
 }
+
+/* 投稿描画 */
 
 function renderPosts(){
 
-    const area = document.getElementById("posts");
+    const postsDiv = document.getElementById("posts");
 
-    area.innerHTML = "";
+    postsDiv.innerHTML = "";
 
     if(!currentThread) return;
 
-    threads[currentThread].posts.forEach((p,i)=>{
+    const posts = threads[currentThread].posts;
+
+    posts.forEach((post,index)=>{
 
         const div = document.createElement("div");
 
         div.className = "post";
 
         div.innerHTML = `
-            <div class="post-name">
-                ${i+1} : ${p.name}
+            <div>
+                <span class="post-number">${index+1}</span> :
+                <span class="post-name">${post.name}</span>
+                <span class="post-date">${post.date}</span>
+                <span class="post-id">ID:${post.id}</span>
             </div>
 
             <div class="post-content">
-${p.message}
+${post.message}
             </div>
         `;
 
-        area.appendChild(div);
+        postsDiv.appendChild(div);
 
     });
 
 }
 
+/* 書き込み */
+
 function addPost(){
 
     if(!currentThread){
 
-        alert("スレを選択してください");
+        alert("スレッドを選択してください");
         return;
 
     }
@@ -456,16 +638,33 @@ function addPost(){
 
     }
 
-    name = "黄チャンネル" + name + "がお送りします";
+    name = "黄チャンネル" + escapeHTML(name) + "がお送りします";
 
-    const msg = document.getElementById("message").value.trim();
+    const message = document.getElementById("message").value.trim();
 
-    if(msg === "") return;
+    if(message === ""){
+
+        alert("メッセージを入力してください");
+        return;
+
+    }
+
+    const now = new Date();
+
+    const dateText =
+        now.getFullYear() + "/" +
+        String(now.getMonth()+1).padStart(2,"0") + "/" +
+        String(now.getDate()).padStart(2,"0") + " " +
+        String(now.getHours()).padStart(2,"0") + ":" +
+        String(now.getMinutes()).padStart(2,"0") + ":" +
+        String(now.getSeconds()).padStart(2,"0");
 
     threads[currentThread].posts.push({
 
         name:name,
-        message:msg
+        message:escapeHTML(message),
+        date:dateText,
+        id:randomID()
 
     });
 
@@ -473,33 +672,53 @@ function addPost(){
 
     renderPosts();
 
+    saveData();
+
 }
+
+/* 管理者削除 */
 
 function postAdminNotice(){
 
     if(!isAdmin){
 
-        alert("管理者のみ");
+        alert("管理者権限が必要です");
         return;
 
     }
 
     if(!currentThread){
 
-        alert("スレを選択");
+        alert("スレッドを選択してください");
         return;
 
     }
 
-    const text =
-        document.getElementById("adminNotice").value.trim();
+    const notice = document.getElementById("adminNotice").value.trim();
 
-    if(text === "") return;
+    if(notice === ""){
+
+        alert("お知らせ内容を入力してください");
+        return;
+
+    }
+
+    const now = new Date();
+
+    const dateText =
+        now.getFullYear() + "/" +
+        String(now.getMonth()+1).padStart(2,"0") + "/" +
+        String(now.getDate()).padStart(2,"0") + " " +
+        String(now.getHours()).padStart(2,"0") + ":" +
+        String(now.getMinutes()).padStart(2,"0") + ":" +
+        String(now.getSeconds()).padStart(2,"0");
 
     threads[currentThread].posts.push({
 
         name:"黄チャンネル管理者がお伝えします",
-        message:text
+        message:escapeHTML(notice),
+        date:dateText,
+        id:"ADMIN"
 
     });
 
@@ -507,9 +726,50 @@ function postAdminNotice(){
 
     renderPosts();
 
+    saveData();
+
+}
+
+function deleteCurrentThread(){
+
+    if(!isAdmin){
+
+        alert("管理者権限が必要です");
+        return;
+
+    }
+
+    if(!currentThread){
+
+        alert("スレッドを選択してください");
+        return;
+
+    }
+
+    if(confirm("このスレを削除しますか？")){
+
+        delete threads[currentThread];
+
+        const element = document.getElementById("thread-" + currentThread);
+
+        if(element){
+
+            element.remove();
+
+        }
+
+        currentThread = null;
+
+        document.getElementById("threadTitle").textContent = "スレッドを選択してください";
+
+        document.getElementById("posts").innerHTML = "";
+
+    }
+
 }
 
 </script>
 
 </body>
 </html>
+```
