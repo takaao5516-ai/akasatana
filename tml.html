@@ -1,6 +1,449 @@
-<!DOCTYPE html>
+<!--
+GitHub Pages対応版
 
-        alert("スレッドを選択してください");
+このファイルを index.html にしてGitHubへアップロードしてください。
+
+さらに以下の deploy.yml を
+.github/workflows/deploy.yml
+に保存するとNode.js 24対応になります。
+
+==============================
+deploy.yml の内容
+==============================
+
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+==============================
+-->
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>黄チャンネル</title>
+
+<style>
+
+body{
+    font-family:"BIZ UDPGothic","Yu Gothic UI",sans-serif;
+    background:#efefef;
+    margin:0;
+}
+
+header{
+    background:#003366;
+    color:white;
+    padding:15px;
+    text-align:center;
+    font-size:28px;
+    font-weight:bold;
+}
+
+.center{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.login-box{
+    background:white;
+    padding:30px;
+    border:2px solid #999;
+    width:320px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-bottom:10px;
+    border:1px solid #999;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    background:#003366;
+    color:white;
+    cursor:pointer;
+}
+
+.main{
+    display:none;
+    height:calc(100vh - 62px);
+}
+
+.sidebar{
+    width:300px;
+    background:white;
+    border-right:2px solid #999;
+    overflow-y:auto;
+}
+
+.sidebar h2{
+    background:#ddd;
+    margin:0;
+    padding:10px;
+}
+
+.thread-create{
+    padding:10px;
+}
+
+.thread-item{
+    padding:12px;
+    border-bottom:1px solid #ccc;
+    cursor:pointer;
+    color:#0000cc;
+}
+
+.thread-item:hover{
+    background:#f0f0f0;
+}
+
+.content{
+    flex:1;
+    padding:15px;
+    overflow-y:auto;
+}
+
+.thread{
+    background:white;
+    border:2px solid #999;
+    padding:15px;
+}
+
+.thread-title{
+    color:#cc0000;
+    font-size:24px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.post{
+    border-bottom:1px dashed #999;
+    padding:12px 0;
+}
+
+.post-name{
+    color:#008800;
+    font-weight:bold;
+}
+
+.post-content{
+    margin-top:8px;
+    white-space:pre-wrap;
+}
+
+.admin-btn{
+    position:fixed;
+    top:10px;
+    right:10px;
+    width:auto;
+    padding:10px 15px;
+    background:#cc0000;
+}
+
+#adminPanel{
+    position:fixed;
+    top:0;
+    right:-350px;
+    width:320px;
+    height:100%;
+    background:white;
+    transition:0.3s;
+    padding:20px;
+    border-left:3px solid #999;
+}
+
+#adminPanel.open{
+    right:0;
+}
+
+textarea{
+    width:100%;
+    padding:10px;
+    margin-bottom:10px;
+}
+
+@media(max-width:800px){
+
+    .main{
+        flex-direction:column;
+    }
+
+    .sidebar{
+        width:100%;
+        height:250px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ログイン -->
+
+<div class="center" id="loginScreen">
+
+    <div class="login-box">
+
+        <h2>黄チャンネル ログイン</h2>
+
+        <input type="text" id="siteUser" placeholder="ユーザー名">
+
+        <input type="password" id="sitePass" placeholder="パスワード">
+
+        <button onclick="siteLogin()">
+            入室する
+        </button>
+
+    </div>
+
+</div>
+
+<!-- 本体 -->
+
+<header>
+黄チャンネル
+</header>
+
+<button class="admin-btn" onclick="adminLogin()">
+管理者ログイン
+</button>
+
+<div class="main" id="mainArea">
+
+    <!-- 左 -->
+
+    <div class="sidebar">
+
+        <h2>スレ一覧</h2>
+
+        <div class="thread-create">
+
+            <input type="text" id="newThreadTitle" placeholder="スレタイ">
+
+            <button onclick="createThread()">
+                スレ作成
+            </button>
+
+        </div>
+
+        <div id="threadList"></div>
+
+    </div>
+
+    <!-- 右 -->
+
+    <div class="content">
+
+        <div class="thread">
+
+            <div class="thread-title" id="threadTitle">
+                スレッドを選択してください
+            </div>
+
+            <div id="posts"></div>
+
+            <br>
+
+            <input type="text" id="name" placeholder="名前">
+
+            <textarea id="message" rows="5" placeholder="メッセージ"></textarea>
+
+            <button onclick="addPost()">
+                書き込む
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- 管理者 -->
+
+<div id="adminPanel">
+
+    <h2>管理者機能</h2>
+
+    <textarea id="adminNotice" rows="5" placeholder="お知らせ"></textarea>
+
+    <button onclick="postAdminNotice()">
+        黄チャンネル管理者がお伝えします
+    </button>
+
+</div>
+
+<script>
+
+const SITE_USER = "omoriharuki";
+const SITE_PASS = "omoriharuki";
+
+const ADMIN_USER = "oomoriharuki";
+const ADMIN_PASS = "atamayoi";
+
+let isAdmin = false;
+
+let threads = {};
+let currentThread = null;
+
+function siteLogin(){
+
+    const user = document.getElementById("siteUser").value;
+    const pass = document.getElementById("sitePass").value;
+
+    if(user === SITE_USER && pass === SITE_PASS){
+
+        document.getElementById("loginScreen").style.display = "none";
+
+        document.getElementById("mainArea").style.display = "flex";
+
+    }else{
+
+        alert("ログイン失敗");
+
+    }
+
+}
+
+function adminLogin(){
+
+    const user = prompt("管理者ユーザー名");
+    const pass = prompt("管理者パスワード");
+
+    if(user === ADMIN_USER && pass === ADMIN_PASS){
+
+        isAdmin = true;
+
+        document.getElementById("adminPanel").classList.add("open");
+
+        alert("管理者ログイン成功");
+
+    }else{
+
+        alert("失敗");
+
+    }
+
+}
+
+function createThread(){
+
+    const title = document.getElementById("newThreadTitle").value.trim();
+
+    if(title === "") return;
+
+    const id = Date.now().toString();
+
+    threads[id] = {
+        title:title,
+        posts:[]
+    };
+
+    const div = document.createElement("div");
+
+    div.className = "thread-item";
+
+    div.textContent = title;
+
+    div.onclick = ()=>openThread(id);
+
+    document.getElementById("threadList").appendChild(div);
+
+    document.getElementById("newThreadTitle").value = "";
+
+}
+
+function openThread(id){
+
+    currentThread = id;
+
+    document.getElementById("threadTitle").textContent =
+        threads[id].title;
+
+    renderPosts();
+
+}
+
+function renderPosts(){
+
+    const area = document.getElementById("posts");
+
+    area.innerHTML = "";
+
+    if(!currentThread) return;
+
+    threads[currentThread].posts.forEach((p,i)=>{
+
+        const div = document.createElement("div");
+
+        div.className = "post";
+
+        div.innerHTML = `
+            <div class="post-name">
+                ${i+1} : ${p.name}
+            </div>
+
+            <div class="post-content">
+${p.message}
+            </div>
+        `;
+
+        area.appendChild(div);
+
+    });
+
+}
+
+function addPost(){
+
+    if(!currentThread){
+
+        alert("スレを選択してください");
         return;
 
     }
@@ -13,33 +456,16 @@
 
     }
 
-    name = "黄チャンネル" + escapeHTML(name) + "がお送りします";
+    name = "黄チャンネル" + name + "がお送りします";
 
-    const message = document.getElementById("message").value.trim();
+    const msg = document.getElementById("message").value.trim();
 
-    if(message === ""){
-
-        alert("メッセージを入力してください");
-        return;
-
-    }
-
-    const now = new Date();
-
-    const dateText =
-        now.getFullYear() + "/" +
-        String(now.getMonth()+1).padStart(2,"0") + "/" +
-        String(now.getDate()).padStart(2,"0") + " " +
-        String(now.getHours()).padStart(2,"0") + ":" +
-        String(now.getMinutes()).padStart(2,"0") + ":" +
-        String(now.getSeconds()).padStart(2,"0");
+    if(msg === "") return;
 
     threads[currentThread].posts.push({
 
         name:name,
-        message:escapeHTML(message),
-        date:dateText,
-        id:randomID()
+        message:msg
 
     });
 
@@ -49,49 +475,31 @@
 
 }
 
-/* 管理者削除 */
-
 function postAdminNotice(){
 
     if(!isAdmin){
 
-        alert("管理者権限が必要です");
+        alert("管理者のみ");
         return;
 
     }
 
     if(!currentThread){
 
-        alert("スレッドを選択してください");
+        alert("スレを選択");
         return;
 
     }
 
-    const notice = document.getElementById("adminNotice").value.trim();
+    const text =
+        document.getElementById("adminNotice").value.trim();
 
-    if(notice === ""){
-
-        alert("お知らせ内容を入力してください");
-        return;
-
-    }
-
-    const now = new Date();
-
-    const dateText =
-        now.getFullYear() + "/" +
-        String(now.getMonth()+1).padStart(2,"0") + "/" +
-        String(now.getDate()).padStart(2,"0") + " " +
-        String(now.getHours()).padStart(2,"0") + ":" +
-        String(now.getMinutes()).padStart(2,"0") + ":" +
-        String(now.getSeconds()).padStart(2,"0");
+    if(text === "") return;
 
     threads[currentThread].posts.push({
 
         name:"黄チャンネル管理者がお伝えします",
-        message:escapeHTML(notice),
-        date:dateText,
-        id:"ADMIN"
+        message:text
 
     });
 
@@ -101,4 +509,7 @@ function postAdminNotice(){
 
 }
 
-f
+</script>
+
+</body>
+</html>
